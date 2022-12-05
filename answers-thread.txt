@@ -1,0 +1,26 @@
+insert(key,value, &table[i], table[i]);//thread1
+insert(key,value, &table[i], table[i]);//thread1
+
+static void 
+insert(int key, int value, struct entry **p, struct entry *n)
+{
+  struct entry *e = malloc(sizeof(struct entry));
+  e->key = key;
+  e->value = value;
+  e->next = n;
+  *p = e;
+}
+
+e1->next=table[i];
+e2->next=table[i];
+*p=e1;
+*p=e2;
+
+e1 is lost
+struct entry {
+  int key;
+  int value;
+  struct entry *next;
+};
+
+struct entry *table[NBUCKET];

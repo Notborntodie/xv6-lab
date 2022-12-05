@@ -44,7 +44,8 @@ struct spinlock uart_tx_lock;
 char uart_tx_buf[UART_TX_BUF_SIZE];
 int uart_tx_w; // write next to uart_tx_buf[uart_tx_w++]
 int uart_tx_r; // read next from uart_tx_buf[uar_tx_r++]
-
+int tx_done;
+int tx_chan;
 extern volatile int panicked; // from printf.c
 
 void uartstart();
@@ -179,6 +180,12 @@ uartgetc(void)
 void
 uartintr(void)
 {
+  acquire(&uart_tx_lock);
+  if (ReadReg(LSR)&LSR_TX_IDLE){
+    tx_done=1;
+    wakeup(&tx_chan);//wakeup the sending thread
+  }
+  release(&uart_tx_lock);
   // read and process incoming characters.
   while(1){
     int c = uartgetc();
@@ -190,5 +197,25 @@ uartintr(void)
   // send buffered characters.
   acquire(&uart_tx_lock);
   uartstart();
+  release(&uart_tx_lock);
+}
+
+
+
+
+
+void uartwrite(char buf[],int n){
+  acquire(&uart_tx_lock);
+  int i=0;
+  while (i<n)
+  {
+    while (tx_done==0)
+    {
+      sleep(&tx_chan,&uart_tx_lock);
+    }
+    WriteReg(THR,buf[i]);
+    i+=1;
+    tx_done=0;
+  }
   release(&uart_tx_lock);
 }

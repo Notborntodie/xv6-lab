@@ -12,9 +12,9 @@
 
 
 struct thread {
-  char       stack[STACK_SIZE]; /* the thread's stack */
+  struct     ucontext  context;
   int        state;             /* FREE, RUNNING, RUNNABLE */
-
+  char       stack[STACK_SIZE];
 };
 struct thread all_thread[MAX_THREAD];
 struct thread *current_thread;
@@ -30,6 +30,7 @@ thread_init(void)
   // a RUNNABLE thread.
   current_thread = &all_thread[0];
   current_thread->state = RUNNING;
+  thread_switch((uint64)(&current_thread->context),(uint64)(&current_thread->context));
 }
 
 void 
@@ -43,6 +44,7 @@ thread_schedule(void)
   for(int i = 0; i < MAX_THREAD; i++){
     if(t >= all_thread + MAX_THREAD)
       t = all_thread;
+    //printf("%d %d ",(int)(t-&all_thread[0]),t->state);    
     if(t->state == RUNNABLE) {
       next_thread = t;
       break;
@@ -55,14 +57,20 @@ thread_schedule(void)
     exit(-1);
   }
 
+  //printf("%d",(int)(next_thread-&all_thread[0]));
+
   if (current_thread != next_thread) {         /* switch threads?  */
     next_thread->state = RUNNING;
     t = current_thread;
     current_thread = next_thread;
+    //printf("%d",(int)(current_thread-&all_thread[0]));
     /* YOUR CODE HERE
      * Invoke thread_switch to switch from t to next_thread:
      * thread_switch(??, ??);
      */
+    //printf("%ld %ld\n",t->context.ra,next_thread->context.ra);
+    thread_switch((uint64)(&t->context),(uint64)(&next_thread->context));
+
   } else
     next_thread = 0;
 }
@@ -77,6 +85,8 @@ thread_create(void (*func)())
   }
   t->state = RUNNABLE;
   // YOUR CODE HERE
+  t->context.ra=(uint64)func;
+  t->context.sp=(uint64)(t->stack+STACK_SIZE-1);
 }
 
 void 
