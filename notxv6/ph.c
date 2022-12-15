@@ -76,10 +76,17 @@ get(int key)
 
 
   struct entry *e = 0;
+  struct entry *a = 0;
   for (e = table[i]; e != 0; e = e->next) {
     if (e->key == key) break;
   }
-
+  /*
+  for (a = table[i]; a != 0; a = a->next) {
+    if (a->key == key && a->value!=e->value){
+      printf("repeat\n");
+    }
+  }
+  */
   return e;
 }
 
