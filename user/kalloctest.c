@@ -81,6 +81,7 @@ int
 countfree()
 {
   uint64 sz0 = (uint64)sbrk(0);
+  //printf("1\n");
   int n = 0;
 
   while(1){
@@ -92,6 +93,7 @@ countfree()
     *(char *)(a + 4096 - 1) = 1;
     n += 1;
   }
+  //printf("3\n");
   sbrk(-((uint64)sbrk(0) - sz0));
   return n;
 }

@@ -62,6 +62,7 @@ void
 acquire(struct spinlock *lk)
 {
   push_off(); // disable interrupts to avoid deadlock.
+  
   if(holding(lk))
     panic("acquire");
 
@@ -95,9 +96,10 @@ acquire(struct spinlock *lk)
 void
 release(struct spinlock *lk)
 {
+  
   if(!holding(lk))
     panic("release");
-
+  
   lk->cpu = 0;
 
   // Tell the C compiler and the CPU to not move loads or stores
